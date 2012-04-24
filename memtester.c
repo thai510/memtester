@@ -335,7 +335,6 @@ int main(int argc, char **argv) {
         } else {
             exit_code |= EXIT_FAIL_ADDRESSLINES;
         }
-        fprintf(stdout, "\n-----Running %d tests\n", numTests);
         for (i=0;i<numTests;i++) {
             if (!tests[i].name) break;
               printf("  %-20s: ", tests[i].name);
