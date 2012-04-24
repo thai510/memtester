@@ -41,9 +41,9 @@ struct test tests[] = {
     { "Compare OR", test_or_comparison },
     { "Compare AND", test_and_comparison },
     { "Sequential Increment", test_seqinc_comparison },
+    { "Checkerboard", test_checkerboard_comparison },
     { "Solid Bits", test_solidbits_comparison },
     { "Block Sequential", test_blockseq_comparison },
-    { "Checkerboard", test_checkerboard_comparison },
     { "Bit Spread", test_bitspread_comparison },
     { "Bit Flip", test_bitflip_comparison },
     { "Walking Ones", test_walkbits1_comparison },
@@ -52,7 +52,6 @@ struct test tests[] = {
     { "8-bit Writes", test_8bit_wide_random },
     { "16-bit Writes", test_16bit_wide_random },
 #endif
-    { NULL, NULL }
 };
 
 /* Sanity checks and portability helper macros. */
@@ -117,6 +116,10 @@ int main(int argc, char **argv) {
     int memfd, opt, memshift;
     size_t maxbytes = -1; /* addressable memory, in bytes */
     size_t maxmb = (maxbytes >> 20) + 1; /* addressable memory, in MB */
+    
+    // NEW CODE: COUNTS NUMBER OF TOTAL TESTS POSSIBLE FROM TEST OBJECT
+    int numTests = sizeof(tests)/sizeof(struct test);
+
 
     printf("memtester version " __version__ " (%d-bit)\n", UL_LEN);
     printf("Copyright (C) 2010 Charles Cazabon.\n");
@@ -127,7 +130,7 @@ int main(int argc, char **argv) {
     pagesizemask = (ptrdiff_t) ~(pagesize - 1);
     printf("pagesizemask is 0x%tx\n", pagesizemask);
 
-    while ((opt = getopt(argc, argv, "p:")) != -1) {
+    while ((opt = getopt(argc, argv, "pn:")) != -1) {
         switch (opt) {
             case 'p':
                 errno = 0;
@@ -153,6 +156,8 @@ int main(int argc, char **argv) {
                 }
                 /* okay, got address */
                 use_phys = 1;
+            case 'n':
+                numTests = atoi(optarg);
                 break;
             default: /* '?' */
                 usage(argv[0]); /* doesn't return */
@@ -330,9 +335,10 @@ int main(int argc, char **argv) {
         } else {
             exit_code |= EXIT_FAIL_ADDRESSLINES;
         }
-        for (i=0;;i++) {
+        fprintf(stdout, "\n-----Running %d tests\n", numTests);
+        for (i=0;i<numTests;i++) {
             if (!tests[i].name) break;
-            printf("  %-20s: ", tests[i].name);
+              printf("  %-20s: ", tests[i].name);
             if (!tests[i].fp(bufa, bufb, count)) {
                 printf("ok\n");
             } else {
